@@ -11,15 +11,30 @@
 </head>
 <body>
 
+
+<!-- Select box to choose the story -->
+<form class="form-inline">
+    <div class="form-group">
+        <label for="sort-chosen">Group by</label>
+        <select class="form-control" id="sort-chosen" onchange="updateData()">
+            <option value="ab">A-B</option>
+            <option value="businessTies">Number of business ties</option>
+            <option value="marriages">Number of marriages</option>
+            <option value="allRelations">Number of all relationships</option>
+            <option value="wealth">Wealth</option>
+            <option value="numberPriorates">Number of seats hold in the civic council (priorates)</option>
+        </select>
+    </div>
+</form>
+
 <div id="matrixvis"></div>
 
 <!-- Load JS libraries -->
 <script src="https://d3js.org/d3.v6.min.js"></script>
 <script src="js/matrixvis.js"></script>
 
-
-
 <!-- Load data, create visualizations -->
-<script type="module" src="js/main.js"></script>
+<script src="js/main.js"></script>
+
 </body>
 </html>

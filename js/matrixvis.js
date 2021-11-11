@@ -23,30 +23,31 @@ MatrixVis.prototype.initVis = function(){
     var vis = this;
 
     vis.margin = {top: 100, right: 100, bottom: 100, left: 100},
-        width = 480,
-        height = 480;
+        vis.width = 470,
+        vis.height = 470;
+
+    vis.cellHeight = 20, vis.cellWidth = 20, vis.cellPadding = 10;
+
 
     vis.svg = d3.select("#" + vis.parentElement).append("svg")
-        .attr("width", width + vis.margin.left + vis.margin.right)
-        .attr("height", height + vis.margin.top + vis.margin.bottom)
+        .attr("width", vis.width + vis.margin.left + vis.margin.right)
+        .attr("height", vis.height + vis.margin.top + vis.margin.bottom)
         .style("margin-left", vis.margin.left + "px")
         .append("g")
         .attr("transform", "translate(" + vis.margin.left + "," + vis.margin.top + ")");
 
-    vis.svg.append("rect")
-        .attr("class", "background")
-        .attr("width", width)
-        .attr("height", height);
+    // vis.svg.append("rect")
+    //     .attr("class", "background")
+    //     .attr("width", vis.width)
+    //     .attr("height", vis.height);
 
     vis.x = d3.scaleBand()
         .domain(d3.range(16))
-        .range([0, width])
-        .padding(0.1);
+        .range([0, vis.width])
 
     vis.y = d3.scaleBand()
         .domain(d3.range(16))
-        .range([0, height])
-        .padding(0.1);
+        .range([0, vis.height])
 
 
 
@@ -81,6 +82,8 @@ MatrixVis.prototype.wrangleData = function(){
 
         })
 
+    vis.currentData = vis.dataVis
+
     vis.columnLabels = new Array(16);
     vis.rowLabels = new Array(16);
 
@@ -89,9 +92,21 @@ MatrixVis.prototype.wrangleData = function(){
         vis.rowLabels[i] = vis.dataVis[i]["name"];
     }
 
+    vis.row = vis.svg.selectAll(".row")
+        .data(vis.dataVis)
+        .enter().append("g")
+        .attr("class", "row")
+        .attr("transform", function(d, i) { return "translate(0," + vis.y(i) + ")"; });
+
+    vis.column = vis.svg.selectAll(".column")
+        .data(vis.columnLabels)
+        .enter().append("g")
+        .attr("class", "column")
+        .attr("transform", function(d, i) { return "translate(" + vis.x(i) + ")rotate(-90)"; });
 
 
-    console.log(vis.columnLabels)
+
+    console.log(vis.dataVis)
 
 
     vis.updateVis();
@@ -104,95 +119,95 @@ MatrixVis.prototype.wrangleData = function(){
 
 MatrixVis.prototype.updateVis = function(){
     var vis = this;
+    vis.counterM = 0;
+    vis.indexM = 0;
+    vis.counterB = 0;
+    vis.indexB = 0;
+
+    vis.dataVis = vis.currentData;
+
+    var select = document.getElementById('sort-chosen');
+    var valueSelected = String(select.options[select.selectedIndex].value);
+
+    if(valueSelected !== "ab"){
+        vis.dataVis = vis.currentData.sort(function (a,b) {return b[valueSelected] - a[valueSelected]})
+    }
+
+    console.log(valueSelected)
+    console.log(vis.dataVis)
 
     //update row labels:
     for (var i = 0; i < 16; i++) {
         vis.rowLabels[i] = vis.dataVis[i]["name"];
     }
 
-    vis.row = vis.svg.selectAll(".row")
-        .data(vis.dataVis)
-        .enter().append("g")
-        .attr("class", "row")
-        .attr("transform", function(d, i) { return "translate(0," + vis.y(i) + ")"; });
+    console.log(vis.rowLabels)
 
-    vis.row.selectAll('rect')
-        .data(function(d) { return d; })
-        .enter()
-        .append('rect')
-        .attr('x', 20)
-        .attr('y', 20)
-        .attr('width', vis.x.bandwidth())
-        .attr('height', vis.y.bandwidth())
-        .attr('stroke', 'gray')
-        .attr('stroke-width', 0.5)
-        .attr('fill', "black")
+    vis.trianglePath = vis.row.selectAll(".triangle-path")
+        .data(vis.dataVis);
 
-    // vis.row.selectAll(".cell")
-    //     .data(function(d) { return d; })
-    //     .enter().append("rect")
-    //     .attr("class", "cell")
-    //     .attr("x", function(d, i) { return vis.x(i); })
-    //     .attr("width", 30)
-    //     .attr("height", 30)
-    //     .style("fill", "black");
+    vis.trianglePath.enter().append("path")
+        .attr("class", "triangle-path")
+        .merge(vis.trianglePath)
+        .transition(3000)
+        .attr("d", function(d, index) {
+        var x = (vis.cellWidth + vis.cellPadding) * index;
+        var y = 0;
 
-    vis.row.append("line")
-        .attr("x2", width);
+        return 'M ' + x +' '+ y + ' l ' + vis.cellWidth + ' 0 l 0 ' + vis.cellHeight + ' z';
+    })
+        .attr("fill", function (d,i){
+            vis.counterM++;
+            if(vis.counterM === 17){
+                vis.counterM = 0;
+                vis.indexM++;
+            }
+            if(vis.dataVis[vis.indexM]["marriageValues"][i] == "1"){
+                return "#94D0DD"
+            } else return "#efeff0"
+        })
+
+    vis.trianglePath.enter().append("path")
+        .attr("class", "triangle-path2")
+        .merge(vis.trianglePath)
+        .transition(3000)
+        .attr("d", function(d, index) {
+            var x = (vis.cellWidth + vis.cellPadding) * index;
+            var y = 0;
+            return 'M ' + x +' '+ y + ' l 0 ' + vis.cellHeight + ' l ' + vis.cellWidth + ' 0 z';
+        })
+        .attr("fill", function (d,i){
+            vis.counterB++;
+            if(vis.counterB === 17){
+                vis.counterB = 0;
+                vis.indexB++;
+            }
+            if(vis.dataVis[vis.indexB]["businessValues"][i] == "1"){
+                return "#dda194"
+            } else return "#efeff0"
+        })
+
+    vis.trianglePath.exit().remove();
+
+    //delete previous text:
+    var element = Array.prototype.slice.call(document.getElementsByTagName("text"),0);
+
+    for (var index = 0, len = element.length; index < len; index++) {
+        element[index].parentNode.removeChild(element[index]);
+    }
 
     vis.row.append("text")
         .attr("x", 0)
-        .attr("y", function(d, i) { return vis.y(i) / 2; })
+        .attr("y", function(d, i) { return vis.y(i) / 30; })
         .attr("dy", ".32em")
         .attr("text-anchor", "end")
         .text(function(d, i) { return vis.rowLabels[i] });
 
-    vis.column = vis.svg.selectAll(".column")
-        .data(vis.columnLabels)
-        .enter().append("g")
-        .attr("class", "column")
-        .attr("transform", function(d, i) { return "translate(" + vis.x(i) + ")rotate(-90)"; });
-
-    vis.column.append("line")
-        .attr("x1", -width);
-
     vis.column.append("text")
         .attr("x", 6)
-        .attr("y",function(d, i) { return vis.y(i) / 2; })
+        .attr("y",function(d, i) { return vis.y(i)  / 30; })
         .attr("dy", ".32em")
         .attr("text-anchor", "start")
         .text(function(d, i) { return d; });
 
-    // var bars = vis.svg.selectAll(".bar")
-    //     .data(this.displayData)
-    //
-    // bars.enter().append("rect")
-    //     .attr("class", "bar")
-    //
-    //     .merge(bars)
-    //     .transition()
-    //     .attr("width", vis.x.bandwidth())
-    //     .attr("height", function(d){
-    //         return vis.height - vis.y(d);
-    //     })
-    //     .attr("x", function(d, index){
-    //         return vis.x(index);
-    //     })
-    //     .attr("y", function(d){
-    //         return vis.y(d);
-    //     })
-    //
-    // bars.exit().remove();
-    //
-    // // Call axis function with the new domain
-    // vis.svg.select(".y-axis").call(vis.yAxis);
-    //
-    // // Update x-axis tick values to something more meaningful
-    // vis.svg.select(".x-axis").call(vis.xAxis)
-    //     .selectAll("text")
-    //     .text(function(d){
-    //         return vis.metaData.choices[d + 100];
-    //     })
-    //     .attr("transform", 'rotate(-45)')
-    //     .style("text-anchor", "end")
 }
