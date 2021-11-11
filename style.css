@@ -1,0 +1,12 @@
+.background{
+    fill: darkgrey;
+}
+
+.tooltip {
+    position: absolute;
+    text-align: center;
+    padding: 5px;
+    font: 12px sans-serif;
+    background: lightsteelblue;
+    border-radius: 6px;
+}
