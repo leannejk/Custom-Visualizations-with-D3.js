@@ -22,11 +22,13 @@ MatrixVis = function(_parentElement, _data, _businessData, _marriagesData){
 MatrixVis.prototype.initVis = function(){
     var vis = this;
 
-    vis.margin = {top: 100, right: 100, bottom: 100, left: 100},
-        vis.width = 470,
-        vis.height = 470;
+    vis.margin = {top: 100, right: 100, bottom: 100, left: 100};
+    vis.width = 470;
+    vis.height = 470;
 
-    vis.cellHeight = 20, vis.cellWidth = 20, vis.cellPadding = 10;
+    vis.cellHeight = 20;
+    vis.cellWidth = 20;
+    vis.cellPadding = 10;
 
 
     vis.svg = d3.select("#" + vis.parentElement).append("svg")
@@ -110,7 +112,7 @@ MatrixVis.prototype.wrangleData = function(){
         .attr("y",function(d, i) { return vis.y(i)  / 30; })
         .attr("dy", ".32em")
         .attr("text-anchor", "start")
-        .text(function(d, i) { return d; });
+        .text(function(d) { return d; });
 
     vis.updateVis();
 }
