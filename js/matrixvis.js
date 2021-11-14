@@ -51,6 +51,7 @@ MatrixVis.prototype.initVis = function(){
         .domain(d3.range(16))
         .range([0, vis.height])
 
+    vis.yscale = vis.svg.append("g")
 
 
     // (Filter, aggregate, modify data)
@@ -88,11 +89,9 @@ MatrixVis.prototype.wrangleData = function(){
     vis.initialData = vis.dataVis
 
     vis.columnLabels = new Array(16);
-    vis.rowLabels = new Array(16);
 
     for (var i = 0; i < 16; i++) {
         vis.columnLabels[i] = vis.dataVis[i]["name"];
-        vis.rowLabels[i] = vis.dataVis[i]["name"];
     }
 
     vis.row = vis.svg.selectAll(".row")
@@ -124,9 +123,7 @@ MatrixVis.prototype.wrangleData = function(){
 
 MatrixVis.prototype.updateVis = function(){
     var vis = this;
-    vis.counterM = 0;
     vis.indexM = -1;
-    vis.counterB = 0;
     vis.indexB = -1;
 
     var select = document.getElementById('sort-chosen');
@@ -139,11 +136,6 @@ MatrixVis.prototype.updateVis = function(){
         vis.dataVis = vis.dataVis.sort(function (a,b) {return a.name.localeCompare(b.name)})
     }
 
-    //update row labels:
-    for (var i = 0; i < 16; i++) {
-        vis.rowLabels[i] = vis.dataVis[i]["name"];
-    }
-
     vis.trianglePath1 = vis.row.selectAll(".triangle-path1")
         .data(vis.dataVis);
 
@@ -151,7 +143,7 @@ MatrixVis.prototype.updateVis = function(){
         .attr("class", "triangle-path1")
         .merge(vis.trianglePath1)
 
-    vis.path1.transition(10000)
+    vis.path1.transition().duration(3000)
         .attr("d", function(d, index) {
             var x = (vis.cellWidth + vis.cellPadding) * index;
             var y = 0;
@@ -181,7 +173,7 @@ MatrixVis.prototype.updateVis = function(){
                 }
 
                 var rows = document.getElementById("rowFather").childNodes
-                for(var j = 0; j < 16; j ++){
+                for(var j = 1; j <= 16; j ++){
                     var child = rows[j].childNodes
                     child[index].style.opacity = "1"
                     child[index + 16].style.opacity = "1"
@@ -204,7 +196,7 @@ MatrixVis.prototype.updateVis = function(){
         .merge(vis.trianglePath2)
 
 
-    vis.path2.transition(10000)
+    vis.path2.transition().duration(3000)
         .attr("d", function(d, index) {
             var x = (vis.cellWidth + vis.cellPadding) * index;
             var y = 0;
@@ -233,7 +225,7 @@ MatrixVis.prototype.updateVis = function(){
             }
 
             var rows = document.getElementById("rowFather").childNodes
-            for(var j = 0; j < 16; j ++){
+            for(var j = 1; j <= 16; j ++){
                 var child = rows[j].childNodes
                 child[index].style.opacity = "1"
                 child[index + 16].style.opacity = "1"
@@ -248,35 +240,13 @@ MatrixVis.prototype.updateVis = function(){
 
     vis.trianglePath2.exit().remove();
 
-    // vis.textRow = vis.row.selectAll("text")
-    //     .data(vis.dataVis)
-    //
-    // vis.textRow.enter().append("text")
-    //     .attr("x", 0)
-    //     .attr("dy", ".32em")
-    //     .attr("text-anchor", "end")
-    //     .merge(vis.textRow)
-    //     .attr("y", function(d, i) { return vis.y(i) / 30; })
-    //     .text(function(d, i) { return vis.rowLabels[i] });
-    //
-    // vis.textRow.exit().remove()
-
-    //delete previous text:
-    var element = Array.prototype.slice.call(document.getElementsByClassName("rowText"),0);
-
-    for (var index = 0, len = element.length; index < len; index++) {
-        element[index].parentNode.removeChild(element[index]);
-    }
-
-    vis.row.append("text")
-        .attr("class", "rowText")
-        .attr("x", 0)
-        .attr("y", function(d, i) { return vis.y(i) / 30; })
-        .attr("dy", ".32em")
-        .attr("text-anchor", "end")
-        .text(function(d, i) { return vis.rowLabels[i] });
-
-
-
+    vis.y.domain(vis.dataVis.map(function (d){return d.name}));
+    vis.yAxis = d3.axisLeft(vis.y);
+    vis.yscale
+        .attr("class", "axis y-axis")
+        .attr("transform", "translate(" + 0 + "," + 0 + ")")
+        .transition()
+        .duration(3000)
+        .call(vis.yAxis);
 
 }
